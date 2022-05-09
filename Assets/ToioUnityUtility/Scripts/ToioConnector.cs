@@ -15,11 +15,15 @@ public class ToioConnector : MonoBehaviour
     }
     [SerializeField] ConnectCountType _connectCountType;
     [SerializeField] int _connectCount;
+    [SerializeField] GameObject _infoPanelPrefab;
+    [SerializeField] GameObject _infoPanelParentObj;
     CubeManager _cubeManager;
     Vector2 _previousPos;
     bool _roundTrip;
     int _rightWheelVelocity;
     int _leftWheelVelocity;
+    Cube _targetCube;
+    List<ToioInfoPanel> _infoPanels = new List<ToioInfoPanel>();
 
     void Start() {
         _cubeManager = new CubeManager(_connectType);
@@ -44,18 +48,39 @@ public class ToioConnector : MonoBehaviour
 
         foreach(var cube in _cubeManager.cubes)
         {
+            var infoPanelObj = Instantiate(_infoPanelPrefab);
+            infoPanelObj.transform.parent = _infoPanelParentObj.transform;
+            infoPanelObj.transform.position = Vector3.zero;
+            infoPanelObj.transform.rotation = Quaternion.identity;
+            var infoPanel = infoPanelObj.GetComponent<ToioInfoPanel>();
+            var cubeNum = _cubeManager.cubes.IndexOf(cube);
+            infoPanel._buttonText.text = cubeNum.ToString();
+            infoPanel._button.onClick.AddListener(delegate {SetTargetCube(cube);});
+            _infoPanels.Add(infoPanel);
+
             cube
                 .ObserveEveryValueChanged(x => x.pos)
                 .Subscribe(_ => OnUpdatePose(cube));
             cube.idMissedCallback.AddListener("EventScene", OnMissedPose);
-            
         }
+
+        SetTargetCube(_cubeManager.cubes.First());
+    }
+
+    void SetTargetCube(Cube cube) {
+        _targetCube = cube;
+        foreach (var infoPanel in _infoPanels)
+        {
+            infoPanel.ChangeBackgroundImageColor(infoPanel._backgroundImageDefaultColor);
+        }
+        var selectedInfoPanel = _infoPanels[_cubeManager.cubes.IndexOf(cube)];
+        selectedInfoPanel.ChangeBackgroundImageColor(selectedInfoPanel._backgroundImageSelectedColor);
     }
 
     void OnUpdatePose(Cube cube) {
         if (Vector2.Distance(cube.pos, _previousPos) > 2f) {
-            Debug.Log("Update Pose");
             _previousPos = cube.pos;
+            _infoPanels[_cubeManager.cubes.IndexOf(cube)].SetPositionTexts((int)cube.pos.x, (int)cube.pos.y);
         }
     }
 
@@ -123,7 +148,14 @@ public class ToioConnector : MonoBehaviour
         _roundTrip = false;
     }
 
-    public void MoveLRCommand(int left, int right) {
+    public void MoveLRCommand(Cube cube, int left, int right) {
+        if (_cubeManager.IsControllable(cube))
+        {
+            cube?.Move(left, right, durationMs:100);
+        }
+    }
+
+    public void MoveLRCommandAll(int left, int right) {
         foreach(var cube in _cubeManager.syncCubes)
         {
             if (_cubeManager.IsControllable(cube))
@@ -154,14 +186,14 @@ public class ToioConnector : MonoBehaviour
             }
             if (Input.GetKey(KeyCode.S)) {
                 _rightWheelVelocity = -40;
-                _leftWheelVelocity = 40;
+                _leftWheelVelocity = -40;
             }
             if (Input.GetKey(KeyCode.D)) {
                 _rightWheelVelocity = 0;
                 _leftWheelVelocity = 10;
             }
 
-            MoveLRCommand(_leftWheelVelocity, _rightWheelVelocity);
+            MoveLRCommand(_targetCube, _leftWheelVelocity, _rightWheelVelocity);
         }
 
         foreach(var cube in _cubeManager.syncCubes)

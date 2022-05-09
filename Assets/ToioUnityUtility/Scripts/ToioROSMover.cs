@@ -21,6 +21,6 @@ public class ToioROSMover : MonoBehaviour
 
     private void OnReceivedToioControlMsg(ToioControlMsg msg)
     {   
-        _toioConnector.MoveLRCommand(msg.left, msg.right);
+        _toioConnector.MoveLRCommandAll(msg.left, msg.right);
     }
 }
