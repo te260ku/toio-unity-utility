@@ -17,6 +17,8 @@ public class ToioConnector : MonoBehaviour
     [SerializeField] int _connectCount;
     [SerializeField] GameObject _infoPanelPrefab;
     [SerializeField] GameObject _infoPanelParentObj;
+    [SerializeField] TMP_InputField _leftWheelVelocityInputField;
+    [SerializeField] TMP_InputField _rightWheelVelocityInputField;
     CubeManager _cubeManager;
     Vector2 _previousPos;
     bool _roundTrip;
@@ -155,6 +157,16 @@ public class ToioConnector : MonoBehaviour
         }
     }
 
+    public void MoveLRCommandInputFiled() {
+        var cube = _targetCube;
+        if (_cubeManager.IsControllable(cube))
+        {
+            var left = int.Parse(_leftWheelVelocityInputField.text);
+            var right = int.Parse(_rightWheelVelocityInputField.text);
+            cube?.Move(left, right, durationMs:0);
+        }
+    }
+
     public void MoveLRCommandAll(int left, int right) {
         foreach(var cube in _cubeManager.syncCubes)
         {
@@ -165,10 +177,11 @@ public class ToioConnector : MonoBehaviour
         }
     }
 
-    public void Forward(Cube cube) { cube?.Move(40, 40, durationMs:0); }
-    public void Backward(Cube cube) { cube?.Move(-40, -40, durationMs:0); }
+    public void Forward(Cube cube) { cube?.Move(20, 20, durationMs:0); }
+    public void Backward(Cube cube) { cube?.Move(-20, -20, durationMs:0); }
     public void TurnRight(Cube cube) { cube?.Move(30, 0, durationMs:0); }
     public void TurnLeft(Cube cube) { cube?.Move(0, 30, durationMs:0); }
+    public void Spin(Cube cube) { cube?.Move(20, -20, durationMs:0); }
     public void Stop(Cube cube) { cube?.Move(0, 0, durationMs:0, order:Cube.ORDER_TYPE.Strong); }
 
     void Update()
@@ -203,6 +216,10 @@ public class ToioConnector : MonoBehaviour
                 if (_roundTrip) RoundTrip(cube);
             }
         }
+    }
+
+    public void SpinCube() {
+        Spin(_targetCube);
     }
 
     public void RoundTrip(Cube cube) {
