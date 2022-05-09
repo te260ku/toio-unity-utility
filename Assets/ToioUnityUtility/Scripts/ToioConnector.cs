@@ -18,6 +18,8 @@ public class ToioConnector : MonoBehaviour
     CubeManager _cubeManager;
     Vector2 _previousPos;
     bool _roundTrip;
+    int _rightWheelVelocity;
+    int _leftWheelVelocity;
 
     void Start() {
         _cubeManager = new CubeManager(_connectType);
@@ -126,7 +128,7 @@ public class ToioConnector : MonoBehaviour
         {
             if (_cubeManager.IsControllable(cube))
             {
-                cube?.Move(left, right, durationMs:500);
+                cube?.Move(left, right, durationMs:100);
             }
         }
     }
@@ -139,11 +141,28 @@ public class ToioConnector : MonoBehaviour
 
     void Update()
     {
-        if(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.A)) {
-            Debug.Log("Key Pushed");
-        }
-
         if (!_cubeManager.syncCubes.Any()) return;
+
+        if(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.A)) {
+            if (Input.GetKey(KeyCode.W)) {
+                _rightWheelVelocity = 40;
+                _leftWheelVelocity = 40;
+            }
+            if (Input.GetKey(KeyCode.A)) {
+                _rightWheelVelocity = 10;
+                _leftWheelVelocity = 0;
+            }
+            if (Input.GetKey(KeyCode.S)) {
+                _rightWheelVelocity = -40;
+                _leftWheelVelocity = 40;
+            }
+            if (Input.GetKey(KeyCode.D)) {
+                _rightWheelVelocity = 0;
+                _leftWheelVelocity = 10;
+            }
+
+            MoveLRCommand(_leftWheelVelocity, _rightWheelVelocity);
+        }
 
         foreach(var cube in _cubeManager.syncCubes)
         {
