@@ -139,6 +139,10 @@ public class ToioConnector : MonoBehaviour
 
     void Update()
     {
+        if(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.A)) {
+            Debug.Log("Key Pushed");
+        }
+
         if (!_cubeManager.syncCubes.Any()) return;
 
         foreach(var cube in _cubeManager.syncCubes)
