@@ -61,8 +61,5 @@ crashlytics-build.properties
 .vscode/
 [Aa]ssets/Oculus/
 [Aa]ssets/XR/
-Assets/ble-plugin-unity/
 Assets/Plugins/
-Assets/TextMesh Pro/
-Assets/toio-sdk/
-Assets/WebGLTemplates/
+Assets/Externals/
